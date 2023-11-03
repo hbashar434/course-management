@@ -26,25 +26,42 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const doctorCollection = client.db("weCareDB").collection("doctors");
+    //TODO: start here
 
-    app.get("/doctors", async (req, res) => {
-      const result = await doctorCollection.find().toArray();
-      res.send(result);
+    const courseCollection = client.db("courseDB").collection("courses");
+
+    app.get("/api/courses", async (req, res) => {
+      try {
+        const allCourses = await courseCollection.find().toArray();
+        if (allCourses.length === 0) {
+          res.status(404).json({ message: "Course not found" });
+        } else {
+          res.status(200).json(allCourses);
+        }
+      } catch (err) {
+        res.status(500).json({ error: err.message });
+      }
     });
 
-    app.get("/doctors/:id", async (req, res) => {
-      const id = req.params.id;
-      console.log(id);
-      const query = { _id: new ObjectId(id) };
-      const options = {
-        projection: { diseases: 1 },
-      };
-      const result = await doctorCollection.findOne(query, options);
-      console.log(result);
-      res.send(result);
+    app.get("/api/courses/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const course = await courseCollection.findOne(query);
+        if (!course) {
+          res.status(404).json({ message: "Course not found" });
+        } else {
+          res.status(200).json(course);
+        }
+      } catch (err) {
+        res.status(500).json({ error: err.message });
+      }
     });
 
+    ////////////////////////////////////////////////////////////////
+    {
+      /* TODO: End here */
+    }
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -58,9 +75,9 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("we care server is running");
+  res.send("courseDB server is running");
 });
 
 app.listen(port, () => {
-  console.log(`we care server is listening on port ${port}`);
+  console.log(`courseDB server is listening on port ${port}`);
 });
